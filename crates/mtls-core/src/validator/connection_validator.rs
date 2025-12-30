@@ -4,10 +4,9 @@ use crate::error::{Result, ValidationError};
 use crate::cert::CertificateManager;
 use crate::config::{ServerConfig, ClientConfig};
 use crate::ip::IPWhitelistValidator;
-use crate::tls::{TlsConfig, default_backend};
+use crate::tls::TlsConfig;
 use crate::socket::SecureSocketFactory;
 use std::net::{SocketAddr, IpAddr};
-use std::sync::Arc;
 use tokio::net::TcpStream;
 
 /// Result of a connection validation.
@@ -189,7 +188,7 @@ impl ConnectionValidator {
                         // Parse the first certificate in the chain
                         match x509_parser::parse_x509_certificate(&session[0]) {
                             Ok((_, cert)) => Some(crate::cert::CertificateInfo::from_x509(&cert)),
-                            Err(e) => {
+                            Err(_e) => {
                                 // We couldn't parse the certificate, but the TLS handshake succeeded.
                                 // This might be okay if the certificate is used only for authentication and not for extraction.
                                 None
@@ -202,24 +201,14 @@ impl ConnectionValidator {
                     None
                 };
 
-                let validation_result = ValidationResult {
+                Ok((ValidationResult {
                     remote_ip,
                     certificate_info,
                     is_valid: true,
                     failure_reason: None,
-                };
-
-                Ok((validation_result, tls_stream))
+                }, tls_stream))
             }
-            Err(e) => {
-                let validation_result = ValidationResult {
-                    remote_ip: client_addr.ip(),
-                    certificate_info: None,
-                    is_valid: false,
-                    failure_reason: Some(format!("Connection validation failed: {}", e)),
-                };
-                Err(e)
-            }
+            Err(e) => Err(e),
         }
     }
 

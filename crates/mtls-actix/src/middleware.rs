@@ -1,9 +1,12 @@
 //! Actix Web middleware for mTLS authentication.
 
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
+use actix_web::http::StatusCode;
 use actix_web::Error;
+use actix_web::body::BoxBody;
 use mtls_core::validator::ConnectionValidator;
 use std::future::{ready, Ready};
+use std::net::IpAddr;
 use std::rc::Rc;
 
 /// Actix Web middleware for mTLS authentication.
@@ -66,9 +69,48 @@ where
         let validator = self.validator.clone();
 
         Box::pin(async move {
-            // TODO: Extract client certificate from request and validate
-            // For now, just pass through
+            // Extract client IP from the request
+            let client_ip = extract_client_ip(&req);
+
+            // Validate IP if IP validator is configured
+            if let Some(ip_validator) = validator.ip_validator() {
+                if ip_validator.validate(client_ip).is_err() {
+                    let response = actix_web::HttpResponse::build(StatusCode::FORBIDDEN)
+                        .body("IP address not allowed");
+                    return Err(Error::from(actix_web::error::ErrorForbidden("IP address not allowed")));
+                }
+            }
+
+            // Extract client certificate from header (if present)
+            let cert_header = req.headers().get("X-Client-Cert");
+            if let Some(cert_header) = cert_header {
+                // TODO: Validate the client certificate against the CA
+                // For now, just log that we received a certificate
+                log::debug!("Client certificate present: {:?}", cert_header);
+            }
+
+            // Continue with the request
             service.call(req).await
         })
     }
+}
+
+/// Extract client IP from the request.
+fn extract_client_ip(req: &ServiceRequest) -> IpAddr {
+    // First try to get the IP from the connection info (handles X-Forwarded-For)
+    if let Some(addr) = req.connection_info().realip_remote_addr() {
+        if let Ok(ip) = addr.parse() {
+            return ip;
+        }
+    }
+
+    // Fallback to peer address
+    if let Some(addr) = req.connection_info().peer_addr() {
+        if let Ok(ip) = addr.parse() {
+            return ip;
+        }
+    }
+
+    // Default to loopback if we can't determine (should not happen in production)
+    "127.0.0.1".parse().unwrap()
 }

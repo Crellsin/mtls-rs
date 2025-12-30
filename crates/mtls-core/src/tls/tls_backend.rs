@@ -3,7 +3,7 @@
 use crate::error::{Result, TlsError};
 use crate::tls::TlsConfig;
 use std::sync::Arc;
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::pki_types::CertificateDer;
 
 /// Type of TLS backend.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

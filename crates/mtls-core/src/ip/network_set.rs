@@ -1,6 +1,6 @@
 //! Network set for efficient IP network storage and lookup.
 
-use crate::error::{Result, IpValidationError};
+use crate::error::Result;
 use ipnetwork::IpNetwork;
 use std::net::IpAddr;
 use std::collections::HashSet;

@@ -4,6 +4,7 @@ use x509_parser::prelude::*;
 
 /// Information extracted from a certificate.
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct CertificateInfo {
     /// Subject distinguished name.
     pub subject: String,

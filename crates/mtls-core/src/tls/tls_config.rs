@@ -1,8 +1,6 @@
 //! TLS configuration for mTLS authentication.
 
-use crate::error::{Result, TlsError};
 use crate::cert::CertificateManager;
-use std::sync::Arc;
 
 /// TLS configuration for creating client and server TLS contexts.
 #[derive(Debug, Clone)]

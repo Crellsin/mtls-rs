@@ -2,13 +2,13 @@
 name = "mtls-actix"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <you@example.com>"]
+authors = ["Crellsin"]
 description = "Actix-web middleware for mTLS authentication with IP whitelisting"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Crellsin/mtls-rs"
 readme = "README.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+keywords = ["mtls", "tls", "authentication", "actix", "middleware", "security", "ip-whitelist"]
+categories = ["web-programming", "authentication", "api-bindings", "cryptography"]
 
 [dependencies]
 mtls-core = { path = "../mtls-core", version = "0.1.0" }

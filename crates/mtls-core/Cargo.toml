@@ -2,13 +2,13 @@
 name = "mtls-core"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <you@example.com>"]
-description = "Core mTLS authentication library with IP whitelisting"
+authors = ["Crellsin"]
+description = "Core mTLS authentication library with IP whitelisting for Rust applications"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Crellsin/mtls-rs"
 readme = "README.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+keywords = ["mtls", "tls", "authentication", "security", "ip-whitelist"]
+categories = ["api-bindings", "cryptography", "network-programming", "web-programming"]
 
 [dependencies]
 tokio = { workspace = true, features = ["net", "io-util", "rt", "macros"] }

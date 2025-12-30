@@ -2,13 +2,14 @@
 name = "mtls-examples"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <you@example.com>"]
-description = "Example implementations for mTLS authentication"
+authors = ["Crellsin"]
+description = "Example implementations for mTLS authentication with IP whitelisting"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/Crellsin/mtls-rs"
 readme = "README.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+keywords = ["mtls", "tls", "authentication", "examples", "security", "ip-whitelist"]
+categories = ["api-bindings", "cryptography", "network-programming", "web-programming"]
+publish = false  # This is an examples crate, not intended for direct dependency
 
 [dependencies]
 mtls-core = { path = "../mtls-core", version = "0.1.0" }
@@ -16,12 +17,12 @@ mtls-actix = { path = "../mtls-actix", version = "0.1.0", optional = true }
 mtls-rocket = { path = "../mtls-rocket", version = "0.1.0", optional = true }
 mtls-tcp = { path = "../mtls-tcp", version = "0.1.0", optional = true }
 mtls-grpc = { path = "../mtls-grpc", version = "0.1.0", optional = true }
-tokio = { version = "1.0", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_yaml = "0.9.0"
-toml = "0.8.0"
-log = "0.4.0"
-env_logger = "0.11.0"
+tokio = { workspace = true, features = ["full"] }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+toml = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
 
 [features]
 default = []
