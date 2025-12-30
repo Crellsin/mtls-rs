@@ -1,0 +1,22 @@
+[package]
+name = "mtls-tcp"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@example.com>"]
+description = "Raw TCP adapter for mTLS authentication with IP whitelisting"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Crellsin/mtls"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mtls-core = { path = "../mtls-core", version = "0.1.0" }
+tokio = { workspace = true, features = ["net", "io-util", "rt", "macros"] }
+rustls = { workspace = true }
+serde = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+env_logger = { workspace = true }

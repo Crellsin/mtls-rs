@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/mtls-core",
+    "crates/mtls-actix",
+    "crates/mtls-rocket",
+    "crates/mtls-tcp",
+    "crates/mtls-grpc",
+    "crates/mtls-examples",
+]
+
+[workspace.dependencies]
+tokio = { version = "1.0", features = ["full"] }
+rustls = "0.22.0"
+rustls-pemfile = "2.0"
+rustls-native-certs = "0.7.0"
+x509-parser = "0.15.0"
+ipnetwork = "0.20.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9.0"
+toml = "0.8.0"
+thiserror = "1.0.0"
+anyhow = "1.0.0"
+log = "0.4.0"
+env_logger = "0.11.0"
+actix-web = "4.0"
+rocket = { version = "0.5.0", features = ["json"] }
+tonic = "0.11.0"
+prost = "0.12.0"
+tokio-rustls = "0.25.0"
+time = "0.3.0"
+rustls-pki-types = "0.1.0"

@@ -1,0 +1,22 @@
+[package]
+name = "mtls-actix"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <you@example.com>"]
+description = "Actix-web middleware for mTLS authentication with IP whitelisting"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/Crellsin/mtls-rs"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+mtls-core = { path = "../mtls-core", version = "0.1.0" }
+actix-web = { workspace = true }
+tokio = { workspace = true, features = ["rt", "macros"] }
+serde = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+env_logger = { workspace = true }
