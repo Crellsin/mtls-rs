@@ -3,7 +3,6 @@
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::http::StatusCode;
 use actix_web::Error;
-use actix_web::body::BoxBody;
 use mtls_core::validator::ConnectionValidator;
 use std::future::{ready, Ready};
 use std::net::IpAddr;
@@ -45,8 +44,11 @@ where
     }
 }
 
+/// Service wrapper for mTLS middleware.
 pub struct MtlsMiddlewareService<S> {
+    /// The wrapped service.
     service: Rc<S>,
+    /// Connection validator for mTLS.
     validator: Rc<ConnectionValidator>,
 }
 
@@ -75,7 +77,7 @@ where
             // Validate IP if IP validator is configured
             if let Some(ip_validator) = validator.ip_validator() {
                 if ip_validator.validate(client_ip).is_err() {
-                    let response = actix_web::HttpResponse::build(StatusCode::FORBIDDEN)
+                    let _response = actix_web::HttpResponse::build(StatusCode::FORBIDDEN)
                         .body("IP address not allowed");
                     return Err(Error::from(actix_web::error::ErrorForbidden("IP address not allowed")));
                 }

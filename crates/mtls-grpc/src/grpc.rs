@@ -48,6 +48,7 @@ impl ClientCredentials {
 
 /// Interceptor for gRPC that validates mTLS and IP whitelisting.
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct MtlsInterceptor {
     /// Connection validator for mTLS.
     validator: Arc<ConnectionValidator>,

@@ -22,6 +22,7 @@ pub struct CertificateInfo {
 
 impl CertificateInfo {
     /// Creates CertificateInfo from an X509Certificate.
+    #[allow(dead_code)]
     pub fn from_x509(cert: &X509Certificate) -> Self {
         Self {
             subject: cert.subject().to_string(),
@@ -34,31 +35,37 @@ impl CertificateInfo {
     }
 
     /// Returns the subject distinguished name.
+    #[allow(dead_code)]
     pub fn subject(&self) -> &str {
         &self.subject
     }
 
     /// Returns the issuer distinguished name.
+    #[allow(dead_code)]
     pub fn issuer(&self) -> &str {
         &self.issuer
     }
 
     /// Returns the validity start date.
+    #[allow(dead_code)]
     pub fn valid_from(&self) -> &str {
         &self.valid_from
     }
 
     /// Returns the validity end date.
+    #[allow(dead_code)]
     pub fn valid_to(&self) -> &str {
         &self.valid_to
     }
 
     /// Returns the serial number.
+    #[allow(dead_code)]
     pub fn serial_number(&self) -> &str {
         &self.serial_number
     }
 
     /// Returns the signature algorithm.
+    #[allow(dead_code)]
     pub fn signature_algorithm(&self) -> &str {
         &self.signature_algorithm
     }

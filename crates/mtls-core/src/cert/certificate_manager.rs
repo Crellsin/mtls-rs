@@ -23,6 +23,8 @@ pub struct CertificateManager {
     private_key_raw: Vec<u8>,
     /// Root certificate store for validation.
     root_store: Option<RootCertStore>,
+    /// Raw CA certificate bytes (if provided).
+    ca_certs_raw: Option<Vec<Vec<u8>>>,
 }
 
 impl CertificateManager {
@@ -51,16 +53,18 @@ impl CertificateManager {
         let private_key_raw = fs::read(&key_path)?;
         
         // Load CA certificates if provided
-        let (ca_cert_path, root_store) = if let Some(ca_path) = ca_cert_path {
+        let (ca_cert_path, root_store, ca_certs_raw) = if let Some(ca_path) = ca_cert_path {
             let ca_path = ca_path.as_ref().to_path_buf();
             if !ca_path.exists() {
                 return Err(CertificateError::FileNotFound(ca_path.clone()).into());
             }
             let ca_data = fs::read(&ca_path)?;
             let root_store = Self::load_root_store(&ca_data)?;
-            (Some(ca_path), Some(root_store))
+            // Also parse the raw CA certificates as Vec<Vec<u8>>
+            let ca_certs_raw = Self::parse_raw_certificates(&ca_data)?;
+            (Some(ca_path), Some(root_store), Some(ca_certs_raw))
         } else {
-            (None, None)
+            (None, None, None)
         };
         
         Ok(Self {
@@ -70,6 +74,7 @@ impl CertificateManager {
             cert_chain,
             private_key_raw,
             root_store,
+            ca_certs_raw,
         })
     }
     
@@ -131,6 +136,16 @@ impl CertificateManager {
         Ok(root_store)
     }
     
+    /// Parses raw certificates from PEM data into Vec<Vec<u8>>.
+    fn parse_raw_certificates(data: &[u8]) -> Result<Vec<Vec<u8>>> {
+        let mut reader = std::io::Cursor::new(data);
+        let certs_result: std::io::Result<Vec<CertificateDer<'static>>> = certs(&mut reader).collect();
+        let certs = certs_result
+            .map_err(|e| CertificateError::Parse(format!("Failed to parse certificates: {}", e)))?;
+        
+        Ok(certs.into_iter().map(|cert| cert.as_ref().to_vec()).collect())
+    }
+    
     /// Returns a reference to the certificate chain.
     pub fn cert_chain(&self) -> &[CertificateDer<'static>] {
         &self.cert_chain
@@ -163,14 +178,21 @@ impl CertificateManager {
     
     /// Validates the certificate chain against the root store.
     pub fn validate_certificate_chain(&self) -> Result<()> {
-        if let Some(root_store) = &self.root_store {
-            // For now, we just check that we have a root store.
-            // In a more complete implementation, we would validate the chain.
+        if let Some(ca_certs_raw) = &self.ca_certs_raw {
             if self.cert_chain.is_empty() {
                 return Err(CertificateError::Validation("No certificates in chain".to_string()).into());
             }
-            // TODO: Implement full chain validation
-            Ok(())
+            // Convert the certificate chain to raw DER bytes for validation
+            let cert_chain_raw: Vec<Vec<u8>> = self.cert_chain.iter()
+                .map(|cert| cert.as_ref().to_vec())
+                .collect();
+            
+            // Use the validation module to validate the chain
+            crate::cert::validation::CertificateValidation::validate_certificate_chain(
+                &cert_chain_raw,
+                ca_certs_raw,
+                None, // current time
+            )
         } else {
             Err(CertificateError::Validation("No root store available for validation".to_string()).into())
         }

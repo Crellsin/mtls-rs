@@ -1,8 +1,8 @@
 //! Raw TCP server and client with mTLS authentication.
 
 use mtls_core::validator::ConnectionValidator;
-use tokio::io::{AsyncRead, AsyncWrite, AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::net::TcpListener;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
