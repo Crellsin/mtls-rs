@@ -2,7 +2,7 @@
 
 use actix_web::dev::{Service, ServiceRequest, ServiceResponse, Transform};
 use actix_web::http::StatusCode;
-use actix_web::Error;
+use actix_web::{Error, HttpMessage};
 use mtls_core::validator::ConnectionValidator;
 use std::future::{ready, Ready};
 use std::net::IpAddr;
@@ -83,13 +83,10 @@ where
                 }
             }
 
-            // Extract client certificate from header (if present)
-            let cert_header = req.headers().get("X-Client-Cert");
-            if let Some(cert_header) = cert_header {
-                // TODO: Validate the client certificate against the CA
-                // For now, just log that we received a certificate
-                log::debug!("Client certificate present: {:?}", cert_header);
-            }
+            // Store the validator and client IP in request extensions for use by extractors
+            let mut req = req;
+            req.request().extensions_mut().insert(validator);
+            req.request().extensions_mut().insert(client_ip);
 
             // Continue with the request
             service.call(req).await
