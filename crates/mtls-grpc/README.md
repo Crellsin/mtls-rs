@@ -158,11 +158,9 @@ Please see the main project repository for contribution guidelines.
 
 ## License
 
-Dual-licensed under either:
+licensed under:
 
-- MIT License
-- Apache License, Version 2.0
-
+- GNU GPL-3.0 license
 at your option.
 
 ## Note

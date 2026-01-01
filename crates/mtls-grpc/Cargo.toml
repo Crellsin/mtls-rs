@@ -7,7 +7,7 @@ description = "gRPC adapter for mTLS authentication with IP whitelisting"
 license = "GPL-3.0"
 repository = "https://github.com/Crellsin/mtls-rs"
 readme = "README.md"
-keywords = ["mtls", "tls", "authentication", "grpc", "tonic", "security", "ip-whitelist"]
+keywords = ["mtls", "tls", "authentication", "grpc", "ip-whitelist"]
 categories = ["network-programming", "authentication", "api-bindings", "cryptography"]
 
 [dependencies]

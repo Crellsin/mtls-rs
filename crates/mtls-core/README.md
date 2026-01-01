@@ -150,12 +150,10 @@ The project includes comprehensive integration tests with pre-generated test cer
 
 ## License
 
-Dual-licensed under either:
+licensed under:
 
-- MIT License
-- Apache License, Version 2.0
+- GNU GPL-3.0 license
 
-at your option.
 
 ## Contributing
 

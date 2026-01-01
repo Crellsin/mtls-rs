@@ -7,7 +7,7 @@ description = "Actix-web middleware for mTLS authentication with IP whitelisting
 license = "GPL-3.0"
 repository = "https://github.com/Crellsin/mtls-rs"
 readme = "README.md"
-keywords = ["mtls", "tls", "authentication", "actix", "middleware", "security", "ip-whitelist"]
+keywords = ["mtls", "tls", "authentication", "actix", "ip-whitelist"]
 categories = ["web-programming", "authentication", "api-bindings", "cryptography"]
 
 [dependencies]

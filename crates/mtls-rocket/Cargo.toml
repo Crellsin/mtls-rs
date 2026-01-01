@@ -7,7 +7,7 @@ description = "Rocket fairing for mTLS authentication with IP whitelisting"
 license = "GPL-3.0"
 repository = "https://github.com/Crellsin/mtls-rs"
 readme = "README.md"
-keywords = ["mtls", "tls", "authentication", "rocket", "fairing", "security", "ip-whitelist"]
+keywords = ["mtls", "tls", "authentication", "rocket", "ip-whitelist"]
 categories = ["web-programming", "authentication", "api-bindings", "cryptography"]
 
 [dependencies]
