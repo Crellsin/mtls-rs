@@ -89,8 +89,7 @@ This document outlines security considerations for using the `mtls-rs` crate and
 ## Reporting Security Issues
 
 If you discover a security vulnerability in `mtls-rs`, please report it responsibly:
-- **Email**: [Provide appropriate contact email]
-- **Disclosure**: We follow responsible disclosure practices.
+- **Email**: devsecurity@ewasila.com
 - **Acknowledgments**: Security researchers who responsibly report vulnerabilities will be acknowledged (if desired).
 
 ## References
