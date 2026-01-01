@@ -346,7 +346,7 @@ mod tests {
 licensed under:
 
 - GNU GPL-3.0 license
-at your option.
+ 
 
 ## Contributing
 

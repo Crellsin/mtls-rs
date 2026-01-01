@@ -289,12 +289,9 @@ Contributions are welcome! Please see the [Contributing Guidelines](CONTRIBUTING
 
 ## License
 
-This project is dual-licensed under:
+This project is licensed under:
 
-- MIT License ([LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT)
-- Apache License, Version 2.0 ([LICENSE-APACHE](./LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-
-at your option.
+- GPL3 License 
 
 ## Support
 
