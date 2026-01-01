@@ -2,13 +2,13 @@
 
 use crate::error::{Result, ValidationError};
 use crate::ip::IPWhitelistValidator;
-use crate::tls::{TlsConfig, TlsBackend, default_backend};
+use crate::tls::{default_backend, TlsBackend, TlsConfig};
+use rustls::pki_types::ServerName;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpStream as TokioTcpStream;
-use tokio_rustls::TlsConnector;
 use tokio_rustls::server::TlsStream;
-use rustls::pki_types::ServerName;
+use tokio_rustls::TlsConnector;
 
 /// Factory for creating secure sockets with mTLS and IP validation.
 #[derive(Clone)]
@@ -57,19 +57,24 @@ impl SecureSocketFactory {
         }
 
         // Create TCP connection
-        let tcp_stream = TokioTcpStream::connect(&server_addr).await
-            .map_err(|e| ValidationError::Connection(format!("Failed to connect to {}: {}", server_addr, e)))?;
+        let tcp_stream = TokioTcpStream::connect(&server_addr).await.map_err(|e| {
+            ValidationError::Connection(format!("Failed to connect to {}: {}", server_addr, e))
+        })?;
 
         // Create TLS connector from the backend configuration
         let client_config = self.backend.create_client_config(&self.tls_config)?;
-        let client_config_arc = client_config.inner.downcast::<rustls::ClientConfig>()
+        let client_config_arc = client_config
+            .inner
+            .downcast::<rustls::ClientConfig>()
             .map_err(|_| ValidationError::Connection("Invalid client config type".to_string()))?;
         let connector = TlsConnector::from(client_config_arc);
 
         // Perform TLS handshake - use IP address directly for ServerName
         let domain = ServerName::IpAddress(server_addr.ip().into());
 
-        let tls_stream = connector.connect(domain, tcp_stream).await
+        let tls_stream = connector
+            .connect(domain, tcp_stream)
+            .await
             .map_err(|e| ValidationError::Connection(format!("TLS handshake failed: {}", e)))?;
 
         Ok(tls_stream)
@@ -88,12 +93,16 @@ impl SecureSocketFactory {
 
         // Create TLS acceptor from the backend configuration
         let server_config = self.backend.create_server_config(&self.tls_config)?;
-        let server_config_arc = server_config.inner.downcast::<rustls::ServerConfig>()
+        let server_config_arc = server_config
+            .inner
+            .downcast::<rustls::ServerConfig>()
             .map_err(|_| ValidationError::Connection("Invalid server config type".to_string()))?;
         let acceptor = tokio_rustls::TlsAcceptor::from(server_config_arc);
 
         // Perform TLS handshake
-        let tls_stream = acceptor.accept(tcp_stream).await
+        let tls_stream = acceptor
+            .accept(tcp_stream)
+            .await
             .map_err(|e| ValidationError::Connection(format!("TLS handshake failed: {}", e)))?;
 
         Ok(tls_stream)

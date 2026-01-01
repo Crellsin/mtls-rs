@@ -2,8 +2,8 @@
 
 use crate::error::{Result, TlsError};
 use crate::tls::TlsConfig;
-use std::sync::Arc;
 use rustls::pki_types::CertificateDer;
+use std::sync::Arc;
 
 /// Type of TLS backend.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -62,7 +62,8 @@ impl TlsBackend for RustlsBackend {
             root_store = store.clone();
         }
 
-        let cert_chain: Vec<CertificateDer<'static>> = cert_manager.cert_chain().iter().cloned().collect();
+        let cert_chain: Vec<CertificateDer<'static>> =
+            cert_manager.cert_chain().iter().cloned().collect();
         let private_key = cert_manager.parse_private_key()?;
 
         let client_config = ClientConfig::builder()
@@ -79,7 +80,8 @@ impl TlsBackend for RustlsBackend {
         use rustls::server::{ServerConfig, WebPkiClientVerifier};
 
         let cert_manager = config.certificate_manager();
-        let cert_chain: Vec<CertificateDer<'static>> = cert_manager.cert_chain().iter().cloned().collect();
+        let cert_chain: Vec<CertificateDer<'static>> =
+            cert_manager.cert_chain().iter().cloned().collect();
         let private_key = cert_manager.parse_private_key()?;
 
         // Build the server config with client authentication if required
@@ -94,13 +96,23 @@ impl TlsBackend for RustlsBackend {
             ServerConfig::builder()
                 .with_client_cert_verifier(client_auth)
                 .with_single_cert(cert_chain, private_key)
-                .map_err(|e| TlsError::Config(format!("Failed to create server config with client auth: {}", e)))?
+                .map_err(|e| {
+                    TlsError::Config(format!(
+                        "Failed to create server config with client auth: {}",
+                        e
+                    ))
+                })?
         } else {
             let client_auth = WebPkiClientVerifier::no_client_auth();
             ServerConfig::builder()
                 .with_client_cert_verifier(client_auth)
                 .with_single_cert(cert_chain, private_key)
-                .map_err(|e| TlsError::Config(format!("Failed to create server config without client auth: {}", e)))?
+                .map_err(|e| {
+                    TlsError::Config(format!(
+                        "Failed to create server config without client auth: {}",
+                        e
+                    ))
+                })?
         };
 
         Ok(ServerTlsConfig {

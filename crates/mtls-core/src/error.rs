@@ -1,8 +1,8 @@
 //! Error types for the mTLS authentication library.
 
-use thiserror::Error;
 use std::io;
 use std::path::PathBuf;
+use thiserror::Error;
 
 /// Main error type for the mTLS library.
 #[derive(Error, Debug)]

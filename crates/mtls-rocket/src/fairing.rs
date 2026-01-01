@@ -1,9 +1,9 @@
 //! Rocket fairing for mTLS authentication.
 
+use mtls_core::validator::ConnectionValidator;
 use rocket::fairing::{Fairing, Info, Kind};
 use rocket::http::Status;
-use rocket::{Request, Response, Data};
-use mtls_core::validator::ConnectionValidator;
+use rocket::{Data, Request, Response};
 use std::net::IpAddr;
 use std::sync::Arc;
 
@@ -41,7 +41,8 @@ impl Fairing for MtlsFairing {
             if let Err(e) = ip_validator.validate(client_ip) {
                 // If validation fails, we can either reject the request here or set a flag.
                 // For now, we'll set a local cache with the error and let the route handle it.
-                request.local_cache(|| Some(Err::<Arc<ConnectionValidator>, String>(e.to_string())));
+                request
+                    .local_cache(|| Some(Err::<Arc<ConnectionValidator>, String>(e.to_string())));
                 return;
             }
         }
@@ -55,12 +56,18 @@ impl Fairing for MtlsFairing {
         }
 
         // Set the validator in local cache for use in routes
-        request.local_cache(|| Some(Ok::<Arc<ConnectionValidator>, String>(self.validator.clone())));
+        request.local_cache(|| {
+            Some(Ok::<Arc<ConnectionValidator>, String>(
+                self.validator.clone(),
+            ))
+        });
     }
 
     async fn on_response<'r>(&self, request: &'r Request<'_>, response: &mut Response<'r>) {
         // If there was an IP validation error, we can set a 403 status
-        if let Some(result) = request.local_cache(|| None::<Option<Result<Arc<ConnectionValidator>, String>>>) {
+        if let Some(result) =
+            request.local_cache(|| None::<Option<Result<Arc<ConnectionValidator>, String>>>)
+        {
             if let Some(Err(_)) = result {
                 response.set_status(Status::Forbidden);
             }

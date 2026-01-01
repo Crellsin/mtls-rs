@@ -1,9 +1,9 @@
 //! IP whitelist validator for mTLS authentication.
 
-use crate::error::{Result, IpValidationError};
 use crate::config::IpWhitelistConfig;
-use std::net::IpAddr;
+use crate::error::{IpValidationError, Result};
 use ipnetwork::IpNetwork;
+use std::net::IpAddr;
 
 /// Validates IP addresses against a whitelist.
 #[derive(Debug, Clone)]
@@ -66,7 +66,11 @@ impl IPWhitelistValidator {
                     // We'll allow by default to be permissive.
                     return Ok(());
                 }
-                if self.ipv4_networks.iter().any(|network| network.contains(std::net::IpAddr::V4(ipv4))) {
+                if self
+                    .ipv4_networks
+                    .iter()
+                    .any(|network| network.contains(std::net::IpAddr::V4(ipv4)))
+                {
                     Ok(())
                 } else {
                     Err(IpValidationError::NotInWhitelist(ip.to_string()).into())
@@ -79,7 +83,11 @@ impl IPWhitelistValidator {
                 if self.ipv6_networks.is_empty() {
                     return Ok(());
                 }
-                if self.ipv6_networks.iter().any(|network| network.contains(std::net::IpAddr::V6(ipv6))) {
+                if self
+                    .ipv6_networks
+                    .iter()
+                    .any(|network| network.contains(std::net::IpAddr::V6(ipv6)))
+                {
                     Ok(())
                 } else {
                     Err(IpValidationError::NotInWhitelist(ip.to_string()).into())

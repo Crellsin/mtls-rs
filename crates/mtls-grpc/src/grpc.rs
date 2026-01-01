@@ -1,5 +1,5 @@
 //! gRPC (tonic) interceptors and credentials for mTLS authentication.
-//! 
+//!
 //! This module is a work in progress. The actual implementation will be added
 //! once the underlying tonic version and its API are stabilized for mTLS.
 

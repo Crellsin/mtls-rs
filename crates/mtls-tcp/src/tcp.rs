@@ -1,10 +1,10 @@
 //! Raw TCP server and client with mTLS authentication.
 
 use mtls_core::validator::ConnectionValidator;
-use tokio::io::{AsyncRead, AsyncWrite};
-use tokio::net::TcpListener;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::net::TcpListener;
 
 /// TCP server with mTLS authentication.
 pub struct TcpServer {
@@ -25,17 +25,24 @@ impl TcpServer {
     }
 
     /// Accepts an incoming connection and returns a validated TLS stream.
-    pub async fn accept(&self) -> std::io::Result<(impl AsyncRead + AsyncWrite + Unpin, SocketAddr)> {
+    pub async fn accept(
+        &self,
+    ) -> std::io::Result<(impl AsyncRead + AsyncWrite + Unpin, SocketAddr)> {
         let (stream, addr) = self.listener.accept().await?;
-        
+
         // Use the connection validator to validate the incoming connection and upgrade to TLS.
-        let (validation_result, tls_stream) = self.validator.validate_incoming(stream).await
+        let (validation_result, tls_stream) = self
+            .validator
+            .validate_incoming(stream)
+            .await
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
         if !validation_result.is_valid {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                validation_result.failure_reason.unwrap_or_else(|| "Connection validation failed".to_string()),
+                validation_result
+                    .failure_reason
+                    .unwrap_or_else(|| "Connection validation failed".to_string()),
             ));
         }
 
@@ -63,14 +70,22 @@ impl TcpClient {
     }
 
     /// Connects to a server at the given address and returns a validated TLS stream.
-    pub async fn connect(&self, addr: SocketAddr) -> std::io::Result<impl AsyncRead + AsyncWrite + Unpin> {
-        let validation_result = self.validator.validate_outgoing(&addr.ip().to_string(), addr.port()).await
+    pub async fn connect(
+        &self,
+        addr: SocketAddr,
+    ) -> std::io::Result<impl AsyncRead + AsyncWrite + Unpin> {
+        let validation_result = self
+            .validator
+            .validate_outgoing(&addr.ip().to_string(), addr.port())
+            .await
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
         if !validation_result.is_valid {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::PermissionDenied,
-                validation_result.failure_reason.unwrap_or_else(|| "Connection validation failed".to_string()),
+                validation_result
+                    .failure_reason
+                    .unwrap_or_else(|| "Connection validation failed".to_string()),
             ));
         }
 
@@ -85,7 +100,9 @@ impl TcpClient {
         // Since we are in the TCP adapter, we can use the socket factory directly.
         // Let's get the socket factory from the validator.
         let socket_factory = self.validator.socket_factory();
-        let tls_stream = socket_factory.create_client_socket(addr).await
+        let tls_stream = socket_factory
+            .create_client_socket(addr)
+            .await
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
         Ok(tls_stream)

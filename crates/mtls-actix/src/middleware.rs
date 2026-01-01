@@ -60,9 +60,13 @@ where
 {
     type Response = ServiceResponse<B>;
     type Error = Error;
-    type Future = std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>>>>;
+    type Future =
+        std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>>>>;
 
-    fn poll_ready(&self, cx: &mut std::task::Context<'_>) -> std::task::Poll<Result<(), Self::Error>> {
+    fn poll_ready(
+        &self,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Result<(), Self::Error>> {
         self.service.poll_ready(cx)
     }
 
@@ -79,7 +83,9 @@ where
                 if ip_validator.validate(client_ip).is_err() {
                     let _response = actix_web::HttpResponse::build(StatusCode::FORBIDDEN)
                         .body("IP address not allowed");
-                    return Err(Error::from(actix_web::error::ErrorForbidden("IP address not allowed")));
+                    return Err(Error::from(actix_web::error::ErrorForbidden(
+                        "IP address not allowed",
+                    )));
                 }
             }
 

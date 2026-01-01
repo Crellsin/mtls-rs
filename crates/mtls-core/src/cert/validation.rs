@@ -1,9 +1,9 @@
 //! Certificate validation utilities.
 
-use crate::error::{Result, CertificateError};
-use x509_parser::prelude::*;
+use crate::error::{CertificateError, Result};
 use ::time::OffsetDateTime;
 use rustls::RootCertStore;
+use x509_parser::prelude::*;
 
 /// Certificate validation functions.
 #[derive(Debug, Clone)]
@@ -17,7 +17,9 @@ impl CertificateValidation {
         time: Option<OffsetDateTime>,
     ) -> Result<()> {
         if cert_chain.is_empty() {
-            return Err(CertificateError::Validation("Certificate chain is empty".to_string()).into());
+            return Err(
+                CertificateError::Validation("Certificate chain is empty".to_string()).into(),
+            );
         }
 
         // Parse the end-entity certificate
@@ -33,12 +35,17 @@ impl CertificateValidation {
             let mut root_store = RootCertStore::empty();
             for ca_cert in ca_certs {
                 // Parse the CA certificate to ensure it's valid
-                let (_, _ca_x509) = X509Certificate::from_der(ca_cert)
-                    .map_err(|e| CertificateError::Parse(format!("Failed to parse CA certificate: {}", e)))?;
+                let (_, _ca_x509) = X509Certificate::from_der(ca_cert).map_err(|e| {
+                    CertificateError::Parse(format!("Failed to parse CA certificate: {}", e))
+                })?;
                 // Use the raw DER bytes to add to root store
                 let cert_der = rustls::pki_types::CertificateDer::from(ca_cert.clone());
-                root_store.add(cert_der)
-                    .map_err(|e| CertificateError::ChainValidation(format!("Failed to add CA certificate to root store: {}", e)))?;
+                root_store.add(cert_der).map_err(|e| {
+                    CertificateError::ChainValidation(format!(
+                        "Failed to add CA certificate to root store: {}",
+                        e
+                    ))
+                })?;
             }
 
             // Validate the chain: we need to build a chain of trust from the end-entity to a root CA
@@ -51,8 +58,12 @@ impl CertificateValidation {
             // and build a list of X509Certificate objects.
             let mut chain_certs = Vec::new();
             for (i, cert_der) in cert_chain.iter().enumerate() {
-                let (_, x509_cert) = X509Certificate::from_der(cert_der)
-                    .map_err(|e| CertificateError::Parse(format!("Failed to parse chain certificate at index {}: {}", i, e)))?;
+                let (_, x509_cert) = X509Certificate::from_der(cert_der).map_err(|e| {
+                    CertificateError::Parse(format!(
+                        "Failed to parse chain certificate at index {}: {}",
+                        i, e
+                    ))
+                })?;
                 chain_certs.push(x509_cert);
             }
 
@@ -82,15 +93,15 @@ impl CertificateValidation {
             // In a more complete implementation, we would verify signatures and check against the root store.
             Ok(())
         } else {
-            Err(CertificateError::Validation("No CA certificates provided for chain validation".to_string()).into())
+            Err(CertificateError::Validation(
+                "No CA certificates provided for chain validation".to_string(),
+            )
+            .into())
         }
     }
 
     /// Validates the certificate's validity period.
-    pub fn validate_validity(
-        cert: &X509Certificate,
-        time: Option<OffsetDateTime>,
-    ) -> Result<()> {
+    pub fn validate_validity(cert: &X509Certificate, time: Option<OffsetDateTime>) -> Result<()> {
         let validity = cert.validity();
         let now = time.unwrap_or_else(OffsetDateTime::now_utc);
 
@@ -109,18 +120,17 @@ impl CertificateValidation {
     }
 
     /// Checks if a certificate has the required key usage extensions.
-    pub fn validate_key_usage(
-        cert: &X509Certificate,
-        required_key_usage: KeyUsage,
-    ) -> Result<()> {
+    pub fn validate_key_usage(cert: &X509Certificate, required_key_usage: KeyUsage) -> Result<()> {
         // Extract key usage extension
         let key_usage_ext = cert
             .key_usage()
             .map_err(|e| CertificateError::Parse(format!("Failed to extract key usage: {}", e)))?;
-        
+
         // If the extension is not present, we cannot validate - assume invalid
         let key_usage = key_usage_ext.ok_or_else(|| {
-            CertificateError::Validation("Key usage extension not present in certificate".to_string())
+            CertificateError::Validation(
+                "Key usage extension not present in certificate".to_string(),
+            )
         })?;
 
         // Get the flags from the KeyUsage struct
@@ -142,9 +152,11 @@ impl CertificateValidation {
         let required_flag = (flags >> (15 - bit_position)) & 1 != 0;
 
         if !required_flag {
-            return Err(CertificateError::Validation(
-                format!("Required key usage {:?} not present in certificate", required_key_usage)
-            ).into());
+            return Err(CertificateError::Validation(format!(
+                "Required key usage {:?} not present in certificate",
+                required_key_usage
+            ))
+            .into());
         }
 
         Ok(())
@@ -156,13 +168,15 @@ impl CertificateValidation {
         required_extended_key_usage: &[&str],
     ) -> Result<()> {
         // Extract extended key usage extension
-        let ext_key_usage_ext = cert
-            .extended_key_usage()
-            .map_err(|e| CertificateError::Parse(format!("Failed to extract extended key usage: {}", e)))?;
-        
+        let ext_key_usage_ext = cert.extended_key_usage().map_err(|e| {
+            CertificateError::Parse(format!("Failed to extract extended key usage: {}", e))
+        })?;
+
         // If the extension is not present, we cannot validate - assume invalid
         let ext_key_usage = ext_key_usage_ext.ok_or_else(|| {
-            CertificateError::Validation("Extended key usage extension not present in certificate".to_string())
+            CertificateError::Validation(
+                "Extended key usage extension not present in certificate".to_string(),
+            )
         })?;
 
         // Check each required extended key usage
@@ -186,9 +200,11 @@ impl CertificateValidation {
             };
 
             if !has_usage {
-                return Err(CertificateError::Validation(
-                    format!("Required extended key usage {} not present in certificate", required_usage)
-                ).into());
+                return Err(CertificateError::Validation(format!(
+                    "Required extended key usage {} not present in certificate",
+                    required_usage
+                ))
+                .into());
             }
         }
 

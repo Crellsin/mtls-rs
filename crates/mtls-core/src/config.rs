@@ -1,9 +1,9 @@
 //! Configuration structures for the mTLS authentication library.
 
-use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
-use std::net::IpAddr;
 use ipnetwork::IpNetwork;
+use serde::{Deserialize, Serialize};
+use std::net::IpAddr;
+use std::path::{Path, PathBuf};
 
 /// Configuration for server-side mTLS.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -124,10 +124,7 @@ impl ServerConfig {
 
 impl ClientConfig {
     /// Creates a new ClientConfig with the required certificate paths.
-    pub fn new(
-        cert_path: impl AsRef<Path>,
-        key_path: impl AsRef<Path>,
-    ) -> Self {
+    pub fn new(cert_path: impl AsRef<Path>, key_path: impl AsRef<Path>) -> Self {
         Self {
             cert_path: cert_path.as_ref().to_path_buf(),
             key_path: key_path.as_ref().to_path_buf(),
@@ -192,13 +189,17 @@ impl IpWhitelistConfig {
                 if !self.validate_ipv4 {
                     return true;
                 }
-                self.ipv4.iter().any(|network| network.contains(std::net::IpAddr::V4(ipv4)))
+                self.ipv4
+                    .iter()
+                    .any(|network| network.contains(std::net::IpAddr::V4(ipv4)))
             }
             IpAddr::V6(ipv6) => {
                 if !self.validate_ipv6 {
                     return true;
                 }
-                self.ipv6.iter().any(|network| network.contains(std::net::IpAddr::V6(ipv6)))
+                self.ipv6
+                    .iter()
+                    .any(|network| network.contains(std::net::IpAddr::V6(ipv6)))
             }
         }
     }

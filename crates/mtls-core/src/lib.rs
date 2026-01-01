@@ -41,19 +41,19 @@ pub mod tls;
 pub mod validator;
 
 // Re-export commonly used types
-pub use cert::{CertificateManager, CertificateInfo, CertificateValidation};
-pub use config::{ClientConfig, ServerConfig, IpWhitelistConfig};
+pub use cert::{CertificateInfo, CertificateManager, CertificateValidation};
+pub use config::{ClientConfig, IpWhitelistConfig, ServerConfig};
 pub use error::{MtlsError, Result};
 pub use ip::{IPWhitelistValidator, NetworkSet};
-pub use tls::{TlsConfig, TlsBackend, TlsBackendType, default_backend};
+pub use tls::{default_backend, TlsBackend, TlsBackendType, TlsConfig};
 pub use validator::ConnectionValidator;
 
 /// Prelude module for convenient imports.
 pub mod prelude {
-    pub use crate::cert::{CertificateManager, CertificateInfo, CertificateValidation};
-    pub use crate::config::{ClientConfig, ServerConfig, IpWhitelistConfig};
+    pub use crate::cert::{CertificateInfo, CertificateManager, CertificateValidation};
+    pub use crate::config::{ClientConfig, IpWhitelistConfig, ServerConfig};
     pub use crate::error::{MtlsError, Result};
     pub use crate::ip::{IPWhitelistValidator, NetworkSet};
-    pub use crate::tls::{TlsConfig, TlsBackend, TlsBackendType, default_backend};
+    pub use crate::tls::{default_backend, TlsBackend, TlsBackendType, TlsConfig};
     pub use crate::validator::ConnectionValidator;
 }

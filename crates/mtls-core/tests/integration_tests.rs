@@ -1,6 +1,6 @@
 //! Integration tests for mTLS core functionality.
 
-use mtls_core::{ConnectionValidator, ServerConfig, ClientConfig, CertificateManager};
+use mtls_core::{CertificateManager, ClientConfig, ConnectionValidator, ServerConfig};
 use std::path::Path;
 
 #[test]
@@ -32,9 +32,18 @@ fn test_server_config_creation() {
         Path::new("../../tests/certs/server/ca.crt"),
     );
     // ServerConfig::new does not return a Result, so we just check that it's created
-    assert_eq!(config.cert_path, Path::new("../../tests/certs/server/server.crt"));
-    assert_eq!(config.key_path, Path::new("../../tests/certs/server/server.key"));
-    assert_eq!(config.ca_cert_path, Path::new("../../tests/certs/server/ca.crt"));
+    assert_eq!(
+        config.cert_path,
+        Path::new("../../tests/certs/server/server.crt")
+    );
+    assert_eq!(
+        config.key_path,
+        Path::new("../../tests/certs/server/server.key")
+    );
+    assert_eq!(
+        config.ca_cert_path,
+        Path::new("../../tests/certs/server/ca.crt")
+    );
 }
 
 #[test]
@@ -45,9 +54,18 @@ fn test_client_config_creation() {
     )
     .with_ca_cert_path(Path::new("../../tests/certs/client/ca.crt"));
     // ClientConfig::new and with_ca_cert_path do not return a Result, so we just check that it's created
-    assert_eq!(config.cert_path, Path::new("../../tests/certs/client/client.crt"));
-    assert_eq!(config.key_path, Path::new("../../tests/certs/client/client.key"));
-    assert_eq!(config.ca_cert_path, Some(Path::new("../../tests/certs/client/ca.crt").to_path_buf()));
+    assert_eq!(
+        config.cert_path,
+        Path::new("../../tests/certs/client/client.crt")
+    );
+    assert_eq!(
+        config.key_path,
+        Path::new("../../tests/certs/client/client.key")
+    );
+    assert_eq!(
+        config.ca_cert_path,
+        Some(Path::new("../../tests/certs/client/ca.crt").to_path_buf())
+    );
 }
 
 #[test]

@@ -1,10 +1,10 @@
 //! Example Rocket server with mTLS authentication.
 
-use rocket::{get, routes, Rocket, Build};
-use rocket::figment::Figment;
-use rocket::fairing::AdHoc;
-use mtls_rocket::MtlsFairing;
 use mtls_core::{ConnectionValidator, ServerConfig};
+use mtls_rocket::MtlsFairing;
+use rocket::fairing::AdHoc;
+use rocket::figment::Figment;
+use rocket::{get, routes, Build, Rocket};
 use std::path::Path;
 
 /// Health check endpoint.
@@ -44,14 +44,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // In production, you should run Rocket behind a TLS-terminating proxy that sets the client certificate header.
 
     println!("Starting Rocket server with mTLS fairing on http://127.0.0.1:8000");
-    println!("Note: In production, run behind a TLS-terminating proxy that sets X-Client-Cert header.");
+    println!(
+        "Note: In production, run behind a TLS-terminating proxy that sets X-Client-Cert header."
+    );
 
     let rocket = rocket::build()
         .attach(mtls_fairing)
         .attach(AdHoc::on_ignite("Configure Address", |rocket| async move {
-            rocket.configure(Figment::from(rocket::Config::default())
-                .merge(("address", "127.0.0.1"))
-                .merge(("port", 8000)))
+            rocket.configure(
+                Figment::from(rocket::Config::default())
+                    .merge(("address", "127.0.0.1"))
+                    .merge(("port", 8000)),
+            )
         }))
         .mount("/", routes![health_check, protected]);
 

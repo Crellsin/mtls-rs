@@ -1,8 +1,8 @@
 //! Example TCP server and client with mTLS authentication.
 
-use mtls_core::{ConnectionValidator, ServerConfig, ClientConfig};
-use std::path::Path;
+use mtls_core::{ClientConfig, ConnectionValidator, ServerConfig};
 use std::net::SocketAddr;
+use std::path::Path;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -31,7 +31,10 @@ pub async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
         let (validation_result, tls_stream) = server_validator.validate_incoming(stream).await?;
 
         if !validation_result.is_valid {
-            eprintln!("Connection validation failed: {:?}", validation_result.failure_reason);
+            eprintln!(
+                "Connection validation failed: {:?}",
+                validation_result.failure_reason
+            );
             continue;
         }
 
@@ -46,7 +49,9 @@ pub async fn run_server() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-async fn handle_connection(mut stream: tokio_rustls::server::TlsStream<tokio::net::TcpStream>) -> Result<(), Box<dyn std::error::Error>> {
+async fn handle_connection(
+    mut stream: tokio_rustls::server::TlsStream<tokio::net::TcpStream>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let mut buffer = [0; 1024];
     let n = stream.read(&mut buffer).await?;
     let request = String::from_utf8_lossy(&buffer[..n]);
@@ -75,10 +80,16 @@ pub async fn run_client() -> Result<(), Box<dyn std::error::Error>> {
     println!("Connecting to {}", addr);
 
     // Validate outgoing connection and get TLS stream
-    let validation_result = client_validator.validate_outgoing("127.0.0.1", 8443).await?;
+    let validation_result = client_validator
+        .validate_outgoing("127.0.0.1", 8443)
+        .await?;
 
     if !validation_result.is_valid {
-        return Err(format!("Connection validation failed: {:?}", validation_result.failure_reason).into());
+        return Err(format!(
+            "Connection validation failed: {:?}",
+            validation_result.failure_reason
+        )
+        .into());
     }
 
     println!("Connection validated: {:?}", validation_result);

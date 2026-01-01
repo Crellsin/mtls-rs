@@ -2,8 +2,8 @@
 
 use crate::error::Result;
 use ipnetwork::IpNetwork;
-use std::net::IpAddr;
 use std::collections::HashSet;
+use std::net::IpAddr;
 
 /// A set of IP networks for efficient lookup.
 #[derive(Debug, Clone, Default)]

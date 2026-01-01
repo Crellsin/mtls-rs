@@ -1,12 +1,12 @@
 //! Connection validator orchestrator for mTLS authentication.
 
-use crate::error::{Result, ValidationError};
 use crate::cert::CertificateManager;
-use crate::config::{ServerConfig, ClientConfig};
+use crate::config::{ClientConfig, ServerConfig};
+use crate::error::{Result, ValidationError};
 use crate::ip::IPWhitelistValidator;
-use crate::tls::TlsConfig;
 use crate::socket::SecureSocketFactory;
-use std::net::{SocketAddr, IpAddr};
+use crate::tls::TlsConfig;
+use std::net::{IpAddr, SocketAddr};
 use tokio::net::TcpStream;
 
 /// Result of a connection validation.
@@ -39,28 +39,26 @@ impl ConnectionValidator {
     /// Creates a new ConnectionValidator for server use.
     pub fn create_for_server(config: ServerConfig) -> Result<Self> {
         // Create certificate manager for server
-        let cert_manager = CertificateManager::for_server(
-            config.cert_path,
-            config.key_path,
-            config.ca_cert_path,
-        )?;
+        let cert_manager =
+            CertificateManager::for_server(config.cert_path, config.key_path, config.ca_cert_path)?;
 
         // Create TLS configuration for server
         let tls_config = TlsConfig::new_server(cert_manager.clone());
 
         // Create IP whitelist validator if configured
-        let ip_validator = if config.client_ipv4_whitelist.is_some() || config.client_ipv6_whitelist.is_some() {
-            let mut ip_config = crate::config::IpWhitelistConfig::new();
-            if let Some(ipv4_nets) = config.client_ipv4_whitelist {
-                ip_config.ipv4 = ipv4_nets;
-            }
-            if let Some(ipv6_nets) = config.client_ipv6_whitelist {
-                ip_config.ipv6 = ipv6_nets;
-            }
-            Some(IPWhitelistValidator::new(&ip_config))
-        } else {
-            None
-        };
+        let ip_validator =
+            if config.client_ipv4_whitelist.is_some() || config.client_ipv6_whitelist.is_some() {
+                let mut ip_config = crate::config::IpWhitelistConfig::new();
+                if let Some(ipv4_nets) = config.client_ipv4_whitelist {
+                    ip_config.ipv4 = ipv4_nets;
+                }
+                if let Some(ipv6_nets) = config.client_ipv6_whitelist {
+                    ip_config.ipv6 = ipv6_nets;
+                }
+                Some(IPWhitelistValidator::new(&ip_config))
+            } else {
+                None
+            };
 
         // Create secure socket factory with optional IP validator
         let socket_factory = if let Some(validator) = &ip_validator {
@@ -80,29 +78,27 @@ impl ConnectionValidator {
     /// Creates a new ConnectionValidator for client use.
     pub fn create_for_client(config: ClientConfig) -> Result<Self> {
         // Create certificate manager for client
-        let cert_manager = CertificateManager::for_client(
-            config.cert_path,
-            config.key_path,
-            config.ca_cert_path,
-        )?;
+        let cert_manager =
+            CertificateManager::for_client(config.cert_path, config.key_path, config.ca_cert_path)?;
 
         // Create TLS configuration for client
-        let tls_config = TlsConfig::new_client(cert_manager.clone())
-            .with_verify_server(config.verify_server);
+        let tls_config =
+            TlsConfig::new_client(cert_manager.clone()).with_verify_server(config.verify_server);
 
         // Create IP whitelist validator if configured
-        let ip_validator = if config.server_ipv4_whitelist.is_some() || config.server_ipv6_whitelist.is_some() {
-            let mut ip_config = crate::config::IpWhitelistConfig::new();
-            if let Some(ipv4_nets) = config.server_ipv4_whitelist {
-                ip_config.ipv4 = ipv4_nets;
-            }
-            if let Some(ipv6_nets) = config.server_ipv6_whitelist {
-                ip_config.ipv6 = ipv6_nets;
-            }
-            Some(IPWhitelistValidator::new(&ip_config))
-        } else {
-            None
-        };
+        let ip_validator =
+            if config.server_ipv4_whitelist.is_some() || config.server_ipv6_whitelist.is_some() {
+                let mut ip_config = crate::config::IpWhitelistConfig::new();
+                if let Some(ipv4_nets) = config.server_ipv4_whitelist {
+                    ip_config.ipv4 = ipv4_nets;
+                }
+                if let Some(ipv6_nets) = config.server_ipv6_whitelist {
+                    ip_config.ipv6 = ipv6_nets;
+                }
+                Some(IPWhitelistValidator::new(&ip_config))
+            } else {
+                None
+            };
 
         // Create secure socket factory with optional IP validator
         let socket_factory = if let Some(validator) = &ip_validator {
@@ -120,27 +116,31 @@ impl ConnectionValidator {
     }
 
     /// Validates an outgoing connection (for clients).
-    pub async fn validate_outgoing(
-        &self,
-        host: &str,
-        port: u16,
-    ) -> Result<ValidationResult> {
+    pub async fn validate_outgoing(&self, host: &str, port: u16) -> Result<ValidationResult> {
         if self.is_server {
             return Err(ValidationError::Connection(
                 "Cannot validate outgoing connection on server validator".to_string(),
-            ).into());
+            )
+            .into());
         }
 
         // Resolve host to IP address
-        let addr: SocketAddr = format!("{}:{}", host, port).parse()
-            .map_err(|e| ValidationError::Connection(format!("Invalid address {}:{}: {}", host, port, e)))?;
+        let addr: SocketAddr = format!("{}:{}", host, port).parse().map_err(|e| {
+            ValidationError::Connection(format!("Invalid address {}:{}: {}", host, port, e))
+        })?;
 
         // Create a TLS socket (this will perform IP validation and TLS handshake)
         match self.socket_factory.create_client_socket(addr).await {
             Ok(tls_stream) => {
                 // Extract remote IP from the socket
-                let remote_ip = tls_stream.get_ref().0.peer_addr()
-                    .map_err(|e| ValidationError::Connection(format!("Failed to get peer address: {}", e)))?.ip();
+                let remote_ip = tls_stream
+                    .get_ref()
+                    .0
+                    .peer_addr()
+                    .map_err(|e| {
+                        ValidationError::Connection(format!("Failed to get peer address: {}", e))
+                    })?
+                    .ip();
 
                 // For now, we don't have a way to extract the server's certificate in the client side.
                 // In a real implementation, we might want to extract it from the TLS session.
@@ -151,14 +151,12 @@ impl ConnectionValidator {
                     failure_reason: None,
                 })
             }
-            Err(e) => {
-                Ok(ValidationResult {
-                    remote_ip: addr.ip(),
-                    certificate_info: None,
-                    is_valid: false,
-                    failure_reason: Some(format!("Connection validation failed: {}", e)),
-                })
-            }
+            Err(e) => Ok(ValidationResult {
+                remote_ip: addr.ip(),
+                certificate_info: None,
+                is_valid: false,
+                failure_reason: Some(format!("Connection validation failed: {}", e)),
+            }),
         }
     }
 
@@ -170,20 +168,28 @@ impl ConnectionValidator {
         if !self.is_server {
             return Err(ValidationError::Connection(
                 "Cannot validate incoming connection on client validator".to_string(),
-            ).into());
+            )
+            .into());
         }
 
-        let client_addr = stream.peer_addr()
-            .map_err(|e| ValidationError::Connection(format!("Failed to get peer address: {}", e)))?;
+        let client_addr = stream.peer_addr().map_err(|e| {
+            ValidationError::Connection(format!("Failed to get peer address: {}", e))
+        })?;
 
         // Create a TLS socket (this will perform IP validation and TLS handshake)
-        match self.socket_factory.create_server_socket(stream, client_addr).await {
+        match self
+            .socket_factory
+            .create_server_socket(stream, client_addr)
+            .await
+        {
             Ok(tls_stream) => {
                 // Extract remote IP from the socket
                 let remote_ip = client_addr.ip();
 
                 // Extract client certificate information if available
-                let certificate_info = if let Some(session) = tls_stream.get_ref().1.peer_certificates() {
+                let certificate_info = if let Some(session) =
+                    tls_stream.get_ref().1.peer_certificates()
+                {
                     if !session.is_empty() {
                         // Parse the first certificate in the chain
                         match x509_parser::parse_x509_certificate(&session[0]) {
@@ -201,12 +207,15 @@ impl ConnectionValidator {
                     None
                 };
 
-                Ok((ValidationResult {
-                    remote_ip,
-                    certificate_info,
-                    is_valid: true,
-                    failure_reason: None,
-                }, tls_stream))
+                Ok((
+                    ValidationResult {
+                        remote_ip,
+                        certificate_info,
+                        is_valid: true,
+                        failure_reason: None,
+                    },
+                    tls_stream,
+                ))
             }
             Err(e) => Err(e),
         }
